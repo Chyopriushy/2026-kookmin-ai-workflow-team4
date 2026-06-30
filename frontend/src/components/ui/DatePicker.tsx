@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { formatDateKeyLabel, parseDateKey, toDateKey } from '@/utils/actionDateRange';
 import { buildMonthWeeks } from '@/utils/calendarWeekBars';
 
+import { getFieldPopoverPosition } from '@/utils/fieldPopoverPosition';
+
 const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 
 interface DatePickerProps {
@@ -13,12 +15,6 @@ interface DatePickerProps {
   placeholder?: string;
   required?: boolean;
   clearable?: boolean;
-}
-
-interface PopoverPosition {
-  top: number;
-  left: number;
-  width: number;
 }
 
 export default function DatePicker({
@@ -42,7 +38,7 @@ export default function DatePicker({
   const [open, setOpen] = useState(false);
   const [viewYear, setViewYear] = useState(initialDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(initialDate.getMonth());
-  const [position, setPosition] = useState<PopoverPosition>({ top: 0, left: 0, width: 0 });
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
 
   const monthWeeks = buildMonthWeeks(viewYear, viewMonth);
   const monthLabel = `${viewYear}년 ${viewMonth + 1}월`;
@@ -51,17 +47,7 @@ export default function DatePicker({
   const updatePosition = () => {
     const rect = triggerRef.current?.getBoundingClientRect();
     if (!rect) return;
-
-    const popoverWidth = 300;
-    const margin = 8;
-    const maxLeft = window.innerWidth - popoverWidth - margin;
-    const left = Math.min(Math.max(margin, rect.left), maxLeft);
-
-    setPosition({
-      top: rect.bottom + margin,
-      left,
-      width: Math.max(rect.width, popoverWidth),
-    });
+    setPosition(getFieldPopoverPosition(rect, 300));
   };
 
   const openPicker = () => {
@@ -142,7 +128,7 @@ export default function DatePicker({
         id={pickerId}
         type="button"
         onClick={() => (open ? closePicker() : openPicker())}
-        className={`field-control field-date-trigger ${open ? 'field-date-trigger--open' : ''}`}
+        className={`field-control field-picker-trigger ${open ? 'field-picker-trigger--open' : ''}`}
         aria-haspopup="dialog"
         aria-expanded={open}
       >
@@ -182,7 +168,7 @@ export default function DatePicker({
         createPortal(
           <div
             ref={popoverRef}
-            className="datepicker-popover"
+            className="datepicker-popover field-popover"
             role="dialog"
             aria-label={label ?? '날짜 선택'}
             style={{
