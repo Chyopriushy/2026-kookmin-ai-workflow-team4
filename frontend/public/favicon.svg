@@ -6,17 +6,29 @@
     </linearGradient>
   </defs>
   <rect x="10" y="10" width="108" height="108" rx="28" fill="url(#bg)" />
-  <g transform="translate(0 5)">
+  <g transform="translate(0 4)">
     <path
-      d="M34 32C34 24.268 40.268 18 48 18H80C87.732 18 94 24.268 94 32V72C94 79.732 87.732 86 80 86H63L44 104V86H48C40.268 86 34 79.732 34 72V32Z"
+      d="M33 36C33 26.611 40.611 19 50 19H80C89.389 19 97 26.611 97 36V66C97 75.389 89.389 83 80 83H65.5L46 101V83C38.82 83 33 77.18 33 70V36Z"
       fill="white"
       fill-opacity="0.96"
     />
-    <path d="M78 18V34C78 39.523 82.477 44 88 44H94" stroke="#BFDBFE" stroke-width="7" stroke-linecap="round" />
-    <path d="M50 42H76" stroke="#3B82F6" stroke-width="7" stroke-linecap="round" />
-    <path d="M50 58H78" stroke="#60A5FA" stroke-width="7" stroke-linecap="round" />
-    <path d="M50 74H64" stroke="#93C5FD" stroke-width="7" stroke-linecap="round" />
-    <circle cx="86" cy="74" r="16" fill="#22D3EE" />
-    <path d="M78 74.5L83.5 80L94 68" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+    <path
+      d="M80 20V34C80 39.523 84.477 44 90 44H96"
+      stroke="#BFDBFE"
+      stroke-width="6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path d="M49 45H75" stroke="#2563EB" stroke-width="6.5" stroke-linecap="round" />
+    <path d="M49 59H81" stroke="#60A5FA" stroke-width="6.5" stroke-linecap="round" />
+    <path d="M49 73H64" stroke="#93C5FD" stroke-width="6.5" stroke-linecap="round" />
+    <circle cx="88" cy="76" r="17" fill="#22D3EE" />
+    <path
+      d="M79.5 76.5L85 82L96.5 69.5"
+      stroke="white"
+      stroke-width="6.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
   </g>
 </svg>
