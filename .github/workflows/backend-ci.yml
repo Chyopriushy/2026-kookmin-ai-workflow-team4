@@ -11,6 +11,15 @@ on:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
 
+# 최소 권한 (least-privilege)
+permissions:
+  contents: read
+
+# 같은 ref에 연속 push 시 이전 실행 취소
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
