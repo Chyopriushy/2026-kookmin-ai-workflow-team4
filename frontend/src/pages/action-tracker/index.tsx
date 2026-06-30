@@ -47,11 +47,9 @@ export default function ActionTrackerPage() {
             액션을 추가하고 카드를 눌러 시작일·마감일·메모를 수정하세요.
           </div>
         </div>
-        {USE_MOCK && (
-          <Button type="button" onClick={() => setModal({ open: true, mode: 'add' })}>
-            액션 추가
-          </Button>
-        )}
+        <Button type="button" onClick={() => setModal({ open: true, mode: 'add' })}>
+          액션 추가
+        </Button>
       </div>
 
       {USE_MOCK ? (
@@ -61,7 +59,8 @@ export default function ActionTrackerPage() {
       ) : (
         <Alert variant="info">
           백엔드 API에서 액션을 불러옵니다. 상태·내용·담당자·마감일 변경은 PATCH로 저장됩니다.
-          시작일·메모는 FE 전용이며 API에 저장되지 않습니다.
+          시작일·메모는 FE 전용이며 API에 저장되지 않습니다. 수동 추가는 현재 세션에만 반영됩니다(API POST
+          미지원).
         </Alert>
       )}
 
@@ -124,7 +123,7 @@ export default function ActionTrackerPage() {
           }
         }}
         onDelete={
-          USE_MOCK && modal.open && modal.mode === 'edit'
+          modal.open && modal.mode === 'edit'
             ? (id) => removeItem(id)
             : undefined
         }

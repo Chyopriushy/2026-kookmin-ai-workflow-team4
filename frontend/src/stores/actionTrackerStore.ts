@@ -31,6 +31,10 @@ function createId() {
   return `action-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function isSessionOnlyItem(id: string) {
+  return id.startsWith('action-');
+}
+
 export const useActionTrackerStore = create<ActionTrackerState>((set, get) => ({
   items: USE_MOCK ? MOCK_ACTION_ITEMS : [],
   loading: false,
@@ -53,7 +57,6 @@ export const useActionTrackerStore = create<ActionTrackerState>((set, get) => ({
   },
 
   addItem: (draft) => {
-    if (!USE_MOCK) return;
     set((state) => ({
       items: [{ id: createId(), ...draft }, ...state.items],
       error: null,
@@ -64,7 +67,7 @@ export const useActionTrackerStore = create<ActionTrackerState>((set, get) => ({
     const previous = get().items.find((item) => item.id === id);
     if (!previous) return;
 
-    if (USE_MOCK) {
+    if (USE_MOCK || isSessionOnlyItem(id)) {
       set((state) => ({
         items: state.items.map((item) => (item.id === id ? { ...item, ...patch } : item)),
         error: null,
@@ -113,7 +116,6 @@ export const useActionTrackerStore = create<ActionTrackerState>((set, get) => ({
   },
 
   removeItem: (id) => {
-    if (!USE_MOCK) return;
     set((state) => ({
       items: state.items.filter((item) => item.id !== id),
       error: null,
