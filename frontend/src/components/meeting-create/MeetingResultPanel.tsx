@@ -1,12 +1,17 @@
 import type { ReactNode } from 'react';
 import Card from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
 import MeetingActionItemCard from '@/components/meeting-create/MeetingActionItemCard';
 import type { ActionItem, Meeting } from '@/api/types';
 import { isoToDateKey } from '@/utils/actionApiMapper';
 
 interface MeetingResultPanelProps {
   meeting: Meeting;
+  actionItems: ActionItem[];
   addedActionIds?: Set<string>;
+  generating?: boolean;
+  onGenerateOne: () => void;
+  onGenerateAll: () => void;
   onAddAction: (action: ActionItem) => void;
 }
 
@@ -28,7 +33,11 @@ function ResultSection({
 
 export default function MeetingResultPanel({
   meeting,
+  actionItems,
   addedActionIds,
+  generating = false,
+  onGenerateOne,
+  onGenerateAll,
   onAddAction,
 }: MeetingResultPanelProps) {
   const { minutes } = meeting;
@@ -38,7 +47,7 @@ export default function MeetingResultPanel({
       <div className="flex flex-col gap-2">
         <div className="text-2xl font-bold text-text-primary">생성된 회의록</div>
         <div className="text-sm text-text-secondary">
-          AI가 구조화한 회의 요약과 추출된 액션 아이템입니다.
+          AI가 구조화한 회의 요약입니다. 액션 아이템은 아래 버튼으로 필요할 때 추출할 수 있습니다.
         </div>
       </div>
 
@@ -88,24 +97,51 @@ export default function MeetingResultPanel({
         </ResultSection>
       )}
 
-      {meeting.actionItems.length > 0 && (
-        <ResultSection
-          title={`액션 아이템 (${meeting.actionItems.length})`}
-          description="담당자·일정을 확인한 뒤 트래커에 추가할 수 있습니다."
-        >
-          <div className="flex flex-col gap-3">
-            {meeting.actionItems.map((action) => (
-              <MeetingActionItemCard
-                key={action.id}
-                action={action}
-                meetingTitle={meeting.title}
-                added={addedActionIds?.has(action.id)}
-                onAdd={onAddAction}
-              />
-            ))}
+      <ResultSection
+        title={actionItems.length > 0 ? `액션 아이템 (${actionItems.length})` : '액션 아이템'}
+        description="회의록에서 할 일을 추출한 뒤, 담당자·일정을 확인하고 트래커에 추가할 수 있습니다."
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              loading={generating}
+              onClick={onGenerateOne}
+            >
+              액션 1개 생성
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="primary"
+              loading={generating}
+              onClick={onGenerateAll}
+            >
+              액션 전체 생성
+            </Button>
           </div>
-        </ResultSection>
-      )}
+
+          {actionItems.length === 0 ? (
+            <div className="text-sm text-text-muted">
+              아직 추출된 액션 아이템이 없습니다. 위 버튼으로 생성해 주세요.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {actionItems.map((action) => (
+                <MeetingActionItemCard
+                  key={action.id}
+                  action={action}
+                  meetingTitle={meeting.title}
+                  added={addedActionIds?.has(action.id)}
+                  onAdd={onAddAction}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </ResultSection>
     </div>
   );
 }
