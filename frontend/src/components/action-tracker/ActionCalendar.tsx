@@ -106,7 +106,7 @@ export default function ActionCalendar({ items, onItemClick }: ActionCalendarPro
               return (
                 <div
                   key={assignee}
-                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs ${color.badgeBg} ${color.badgeText}`}
+                  className={`calendar-legend-chip ${color.badgeBg} ${color.badgeText}`}
                 >
                   <div className={`h-2 w-2 rounded-full ${color.calendarBar}`} />
                   {assignee}
@@ -114,7 +114,7 @@ export default function ActionCalendar({ items, onItemClick }: ActionCalendarPro
               );
             })}
             <div
-              className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs ${getAssigneeColor(null).badgeBg} ${getAssigneeColor(null).badgeText}`}
+              className={`calendar-legend-chip ${getAssigneeColor(null).badgeBg} ${getAssigneeColor(null).badgeText}`}
             >
               <div className={`h-2 w-2 rounded-full ${getAssigneeColor(null).calendarBar}`} />
               담당자 미정
@@ -122,30 +122,24 @@ export default function ActionCalendar({ items, onItemClick }: ActionCalendarPro
           </div>
         )}
 
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={goPrevMonth}
-            className="rounded-lg glass px-3 py-1.5 text-sm text-text-secondary transition-colors hover:text-text-primary"
-          >
-            이전
+        <div className="flex items-center justify-between gap-3">
+          <button type="button" onClick={goPrevMonth} className="calendar-nav-btn">
+            ← 이전
           </button>
-          <div className="text-base font-semibold text-text-primary">{monthLabel}</div>
-          <button
-            type="button"
-            onClick={goNextMonth}
-            className="rounded-lg glass px-3 py-1.5 text-sm text-text-secondary transition-colors hover:text-text-primary"
-          >
-            다음
+          <div className="rounded-xl border border-glass-border/50 bg-glass-bg/50 px-4 py-2 text-base font-semibold text-text-primary backdrop-blur-sm">
+            {monthLabel}
+          </div>
+          <button type="button" onClick={goNextMonth} className="calendar-nav-btn">
+            다음 →
           </button>
         </div>
 
-        <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-7 gap-1">
+        <div className="calendar-shell">
+          <div className="grid grid-cols-7 gap-1.5 px-1">
             {WEEKDAY_LABELS.map((label, index) => (
               <div
                 key={label}
-                className={`py-1 text-center text-xs font-medium ${
+                className={`calendar-weekday ${
                   index === 0 ? 'text-error' : index === 6 ? 'text-primary' : 'text-text-muted'
                 }`}
               >
@@ -156,11 +150,19 @@ export default function ActionCalendar({ items, onItemClick }: ActionCalendarPro
 
           {weeksWithBars.map(({ week, segments, barRows }, weekIndex) => {
             return (
-              <div key={`week-${weekIndex}`} className="flex flex-col gap-1">
-                <div className="grid grid-cols-7 gap-1">
+              <div key={`week-${weekIndex}`} className="calendar-week-block">
+                <div className="grid grid-cols-7 gap-1.5">
                   {week.map((cell, colIndex) => {
                     const isToday = cell.dateKey === todayKey;
                     const isSelected = cell.dateKey === selectedDateKey;
+                    const dayClass = [
+                      'calendar-day-btn',
+                      isToday ? 'calendar-day-btn--today' : '',
+                      isSelected ? 'calendar-day-btn--selected' : '',
+                      !cell.dateKey ? 'cursor-default' : 'text-text-secondary',
+                    ]
+                      .filter(Boolean)
+                      .join(' ');
 
                     return (
                       <button
@@ -168,39 +170,23 @@ export default function ActionCalendar({ items, onItemClick }: ActionCalendarPro
                         type="button"
                         disabled={!cell.dateKey}
                         onClick={() => selectDate(cell.dateKey)}
-                        className={`flex min-h-7 items-start justify-end rounded-md border p-1 transition-colors ${
-                          !cell.dateKey
-                            ? 'cursor-default border-transparent'
-                            : isSelected
-                              ? 'border-primary bg-primary-subtle'
-                              : isToday
-                                ? 'border-primary/50 bg-primary-subtle/50 hover:bg-primary-subtle'
-                                : 'border-transparent hover:bg-bg-muted'
-                        }`}
+                        className={dayClass}
                       >
-                        {cell.day !== null && (
-                          <div
-                            className={`text-xs font-medium ${
-                              isToday || isSelected ? 'text-primary' : 'text-text-secondary'
-                            }`}
-                          >
-                            {cell.day}
-                          </div>
-                        )}
+                        {cell.day !== null && <div>{cell.day}</div>}
                       </button>
                     );
                   })}
                 </div>
 
                 <div
-                  className="grid grid-cols-7 gap-1"
+                  className="grid grid-cols-7 gap-1.5 px-0.5"
                   style={{ gridTemplateRows: `repeat(${Math.max(barRows, 1)}, ${BAR_ROW_HEIGHT}px)` }}
                 >
                   {segments.map((segment) => {
                     const color = getAssigneeColor(segment.item.assignee);
                     const radius =
-                      `${segment.roundLeft ? 'rounded-l-md' : 'rounded-l-none'} ` +
-                      `${segment.roundRight ? 'rounded-r-md' : 'rounded-r-none'}`;
+                      `${segment.roundLeft ? 'rounded-l-lg' : 'rounded-l-sm'} ` +
+                      `${segment.roundRight ? 'rounded-r-lg' : 'rounded-r-sm'}`;
                     const segmentDateKey = week[segment.startCol].dateKey;
 
                     return (
@@ -208,7 +194,7 @@ export default function ActionCalendar({ items, onItemClick }: ActionCalendarPro
                         key={`${segment.item.id}-${weekIndex}-${segment.startCol}-${segment.lane}`}
                         type="button"
                         onClick={() => selectDate(segmentDateKey, segment.item.id)}
-                        className={`flex h-5 cursor-pointer items-center truncate px-1.5 text-[10px] leading-none transition-opacity hover:opacity-90 ${color.calendarBar} ${color.badgeText} ${radius} ${
+                        className={`calendar-bar-btn ${color.calendarBar} ${color.badgeText} ${radius} ${
                           highlightItemId === segment.item.id && selectedDateKey === segmentDateKey
                             ? 'ring-2 ring-primary ring-offset-1'
                             : ''
