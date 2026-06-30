@@ -8,7 +8,6 @@
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "smoke": "tsx scripts/smoke.ts"

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import type { AddressInfo } from "node:net";
 import { buildApp } from "../src/app.js";
+import { prisma } from "../src/server/db.js";
 
 /**
  * mock 모드 스모크 테스트. 실제 HTTP 경로·에러 포맷·계약 정합을 확인한다.
@@ -19,6 +20,7 @@ async function main() {
   await new Promise<void>((resolve) => server.once("listening", () => resolve()));
   const { port } = server.address() as AddressInfo;
   const base = `http://127.0.0.1:${port}`;
+  let createdId: string | undefined;
 
   try {
     // 1) POST 생성
@@ -30,6 +32,7 @@ async function main() {
     assert.equal(postRes.status, 201, "POST는 201이어야 한다");
     assert.equal(postRes.headers.get("x-llm-mode"), "mock", "mock 모드여야 한다");
     const created = (await postRes.json()) as Record<string, any>;
+    createdId = created.id;
 
     assert.ok(created.id, "id가 있어야 한다");
     assert.equal(created.title, SAMPLE.title);
@@ -83,6 +86,11 @@ async function main() {
 
     console.log("✅ smoke test passed (mock mode)");
   } finally {
+    // 테스트로 생성된 회의는 정리(액션아이템은 Cascade로 함께 삭제).
+    if (createdId) {
+      await prisma.meeting.delete({ where: { id: createdId } }).catch(() => {});
+    }
+    await prisma.$disconnect();
     server.close();
   }
 }
