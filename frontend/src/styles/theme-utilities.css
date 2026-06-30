@@ -419,7 +419,8 @@
   }
 
   .datepicker-popover {
-    width: 18.75rem;
+    width: 19rem;
+    max-width: calc(100vw - 1rem);
     padding: 0.5rem;
   }
 
@@ -468,10 +469,13 @@
   }
 
   .calendar-day-btn--compact {
-    min-height: 2rem;
+    aspect-ratio: auto;
+    min-height: 2.125rem;
+    height: 2.125rem;
     justify-content: center;
     align-items: center;
-    padding: 0.25rem;
+    padding: 0.125rem;
+    font-size: 0.75rem;
   }
 
   /* Action tracker calendar */
