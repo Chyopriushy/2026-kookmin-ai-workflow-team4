@@ -63,3 +63,43 @@ export function getUniqueAssignees(items: { assignee: string | null }[]): string
   }
   return [...names].sort((a, b) => a.localeCompare(b, 'ko'));
 }
+
+export const UNASSIGNED_ASSIGNEE_KEY = '__unassigned__';
+
+export function getAssigneeFilterKey(assignee: string | null): string {
+  return assignee ?? UNASSIGNED_ASSIGNEE_KEY;
+}
+
+export interface AssigneeFilterOption {
+  key: string;
+  label: string;
+  assignee: string | null;
+}
+
+export function getAssigneeFilterOptions(
+  items: { assignee: string | null }[],
+): AssigneeFilterOption[] {
+  const options: AssigneeFilterOption[] = getUniqueAssignees(items).map((assignee) => ({
+    key: assignee,
+    label: assignee,
+    assignee,
+  }));
+
+  if (items.some((item) => !item.assignee)) {
+    options.push({
+      key: UNASSIGNED_ASSIGNEE_KEY,
+      label: '담당자 미정',
+      assignee: null,
+    });
+  }
+
+  return options;
+}
+
+export function filterItemsByAssignees<T extends { assignee: string | null }>(
+  items: T[],
+  activeKeys: Set<string>,
+): T[] {
+  if (activeKeys.size === 0) return [];
+  return items.filter((item) => activeKeys.has(getAssigneeFilterKey(item.assignee)));
+}
