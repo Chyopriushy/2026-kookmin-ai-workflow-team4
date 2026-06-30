@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -7,16 +7,16 @@ import ActionItemModal from '@/components/action-tracker/ActionItemModal';
 import ActionSuccessModal from '@/components/ui/ActionSuccessModal';
 import MeetingDetailModal from '@/components/meeting-search/MeetingDetailModal';
 import MeetingListCard from '@/components/meeting-search/MeetingListCard';
-import { getMeeting, getMeetings, searchMeetings, updateActionItem } from '@/api/command';
+import { getMeeting, getMeetings, searchMeetings } from '@/api/command';
 import { USE_MOCK } from '@/api/config';
 import { ApiRequestError } from '@/api/errors';
 import type { ActionItem, Meeting, MeetingListItem } from '@/api/types';
 import {
-  boardDraftToPatchBody,
   meetingActionToBoardItem,
 } from '@/utils/actionApiMapper';
 import type { ActionBoardItem } from '@/constants/actionTracker';
 import type { ActionItemDraft } from '@/stores/actionTrackerStore';
+import { useActionTrackerStore } from '@/stores/actionTrackerStore';
 
 type ActionModalState = { open: false } | { open: true; boardItem: ActionBoardItem };
 
@@ -74,10 +74,18 @@ export default function MeetingSearchPage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [detailMeeting, setDetailMeeting] = useState<Meeting | null>(null);
-  const [trackedActionIds, setTrackedActionIds] = useState<Set<string>>(() => new Set());
   const [actionModal, setActionModal] = useState<ActionModalState>({ open: false });
   const [actionSaveError, setActionSaveError] = useState<string | null>(null);
   const [successOpen, setSuccessOpen] = useState(false);
+
+  const trackerItems = useActionTrackerStore((state) => state.items);
+  const fetchTrackerItems = useActionTrackerStore((state) => state.fetchItems);
+  const updateTrackerItem = useActionTrackerStore((state) => state.updateItem);
+
+  const trackedActionIds = useMemo(
+    () => new Set(trackerItems.map((item) => item.id)),
+    [trackerItems],
+  );
 
   const loadAllMeetings = useCallback(async () => {
     if (USE_MOCK) {
@@ -107,6 +115,11 @@ export default function MeetingSearchPage() {
     void loadAllMeetings();
   }, [loadAllMeetings]);
 
+  useEffect(() => {
+    if (!detailOpen) return;
+    void fetchTrackerItems();
+  }, [detailOpen, fetchTrackerItems]);
+
   const handleCreateTracker = (action: ActionItem) => {
     if (!detailMeeting) return;
     setActionSaveError(null);
@@ -123,12 +136,14 @@ export default function MeetingSearchPage() {
     setActionSaveError(null);
 
     try {
-      const body = boardDraftToPatchBody(draft, previous);
-      if (Object.keys(body).length > 0) {
-        await updateActionItem(previous.id, body);
+      if (!useActionTrackerStore.getState().items.some((item) => item.id === previous.id)) {
+        useActionTrackerStore.setState((state) => ({
+          items: [previous, ...state.items],
+        }));
       }
+      await updateTrackerItem(previous.id, draft);
+      await fetchTrackerItems();
       setActionModal({ open: false });
-      setTrackedActionIds((prev) => new Set(prev).add(previous.id));
       setSuccessOpen(true);
     } catch (err) {
       setActionSaveError(
