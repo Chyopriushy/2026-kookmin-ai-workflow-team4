@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Alert from '@/components/ui/Alert';
 import ActionItemModal from '@/components/action-tracker/ActionItemModal';
 import ActionSuccessModal from '@/components/ui/ActionSuccessModal';
-import { createMeeting, generateActions, updateActionItem } from '@/api/command';
+import { createMeeting, createActionItem, generateActions, updateActionItem } from '@/api/command';
 import { USE_MOCK } from '@/api/config';
 import { ApiRequestError } from '@/api/errors';
 import type { ActionItem, Meeting } from '@/api/types';
@@ -36,6 +36,7 @@ export default function MeetingCreatePage() {
   const [addedActionIds, setAddedActionIds] = useState<Set<string>>(() => new Set());
   const [actionItems, setActionItems] = useState<ActionItem[]>([]);
   const [generatingActions, setGeneratingActions] = useState(false);
+  const [creatingSuggestion, setCreatingSuggestion] = useState<string | null>(null);
   const [generateError, setGenerateError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -119,6 +120,29 @@ export default function MeetingCreatePage() {
       );
     } finally {
       setGeneratingActions(false);
+    }
+  };
+
+  const handleCreateOne = async (content: string) => {
+    if (!result) return;
+
+    setGenerateError(null);
+    setCreatingSuggestion(content);
+    try {
+      const created = await createActionItem({
+        meetingId: result.id,
+        content,
+        status: 'todo',
+      });
+      mergeGeneratedActions([created]);
+    } catch (err) {
+      setGenerateError(
+        err instanceof ApiRequestError
+          ? err.message
+          : '액션 아이템 생성에 실패했습니다.',
+      );
+    } finally {
+      setCreatingSuggestion(null);
     }
   };
 
@@ -207,7 +231,8 @@ export default function MeetingCreatePage() {
             actionItems={actionItems}
             addedActionIds={addedActionIds}
             generating={generatingActions}
-            onGenerateOne={() => handleGenerateActions('one')}
+            creatingSuggestion={creatingSuggestion}
+            onCreateOne={handleCreateOne}
             onGenerateAll={() => handleGenerateActions('all')}
             onAddAction={handleAddAction}
           />
