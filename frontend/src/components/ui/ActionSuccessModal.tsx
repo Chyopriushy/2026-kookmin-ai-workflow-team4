@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import ModalPortal from '@/components/ui/ModalPortal';
 
 interface ActionSuccessModalProps {
   open: boolean;
@@ -22,6 +23,7 @@ export default function ActionSuccessModal({
   if (!open) return null;
 
   return (
+    <ModalPortal>
     <div className="modal-overlay" role="presentation">
       <div className="modal-overlay__blur" aria-hidden="true" />
       <div className="modal-overlay__vignette" aria-hidden="true" />
@@ -37,5 +39,6 @@ export default function ActionSuccessModal({
         <div className="text-base font-semibold text-text-primary">{message}</div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
