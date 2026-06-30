@@ -45,6 +45,10 @@ export async function updateActionItem(
   return data;
 }
 
+export async function deleteActionItem(id: string): Promise<void> {
+  await api.delete(`/api/actions/${id}`);
+}
+
 export async function generateActions(
   body: GenerateActionsRequest,
 ): Promise<GenerateActionsResponse> {
