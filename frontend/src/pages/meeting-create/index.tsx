@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -10,6 +10,7 @@ import { USE_MOCK } from '@/api/config';
 import { ApiRequestError } from '@/api/errors';
 import type { Meeting } from '@/api/types';
 import MeetingResultPanel from '@/components/meeting-create/MeetingResultPanel';
+import { scrollToElementId } from '@/utils/smoothScroll';
 
 export default function MeetingCreatePage() {
   const [title, setTitle] = useState('');
@@ -22,6 +23,14 @@ export default function MeetingCreatePage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Meeting | null>(null);
   const [mockSubmitted, setMockSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (!result) return;
+
+    requestAnimationFrame(() => {
+      scrollToElementId('meeting-create-result');
+    });
+  }, [result]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +91,11 @@ export default function MeetingCreatePage() {
         </Alert>
       )}
 
-      {result && <MeetingResultPanel meeting={result} />}
+      {result && (
+        <div id="meeting-create-result" className="scroll-mt-20">
+          <MeetingResultPanel meeting={result} />
+        </div>
+      )}
 
       {uploadError && (
         <Alert variant="error" title="파일 업로드 오류">
@@ -142,7 +155,7 @@ export default function MeetingCreatePage() {
               required
             />
           </div>
-          <Button type="submit" size="lg" className="self-start" disabled={loading}>
+          <Button type="submit" size="lg" className="self-start" loading={loading}>
             {loading ? '생성 중...' : '회의록 생성'}
           </Button>
         </form>
