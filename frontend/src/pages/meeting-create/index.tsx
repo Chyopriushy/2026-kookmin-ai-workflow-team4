@@ -1,10 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import Card from '@/components/ui/Card';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
 import Alert from '@/components/ui/Alert';
-import FileDropZone from '@/components/ui/FileDropZone';
-import DatePicker from '@/components/ui/DatePicker';
 import ActionItemModal from '@/components/action-tracker/ActionItemModal';
 import ActionSuccessModal from '@/components/ui/ActionSuccessModal';
 import { createMeeting, updateActionItem } from '@/api/command';
@@ -12,6 +7,7 @@ import { USE_MOCK } from '@/api/config';
 import { ApiRequestError } from '@/api/errors';
 import type { ActionItem, Meeting } from '@/api/types';
 import MeetingResultPanel from '@/components/meeting-create/MeetingResultPanel';
+import MeetingInputCollapsible from '@/components/meeting-create/MeetingInputCollapsible';
 import { scrollToElementId } from '@/utils/smoothScroll';
 import {
   boardDraftToPatchBody,
@@ -169,84 +165,28 @@ export default function MeetingCreatePage() {
         </Alert>
       )}
 
-      <Card title="회의 정보 입력">
-        {result && (
-          <div className="mb-4 flex flex-col gap-2">
-            <div className="text-sm text-text-secondary">
-              {formExpanded
-                ? '입력 폼을 펼쳤습니다. 내용을 수정한 뒤 다시 생성할 수 있습니다.'
-                : '회의록이 생성되어 입력 폼을 접었습니다.'}
-            </div>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="self-start"
-              onClick={() => setFormExpanded((expanded) => !expanded)}
-            >
-              {formExpanded ? '입력 폼 접기' : '다시 입력하기'}
-            </Button>
-          </div>
-        )}
-
-        {(!result || formExpanded) && (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <Input
-              label="회의 제목 (선택)"
-              placeholder="예: 스프린트 회고"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-            <DatePicker
-              label="회의 날짜 (선택)"
-              id="meeting-date"
-              value={date}
-              onChange={setDate}
-              clearable
-            />
-            <Input
-              label="참석자 (쉼표로 구분, 선택)"
-              placeholder="예: 김OO, 이OO"
-              value={attendees}
-              onChange={(e) => setAttendees(e.target.value)}
-            />
-
-            <div className="flex flex-col gap-1.5">
-              <div className="text-sm font-medium text-text-secondary">자료 업로드</div>
-              <FileDropZone
-                onTextExtracted={(text, fileName) => {
-                  setRawText(text);
-                  setUploadedFileName(fileName);
-                  setUploadError('');
-                }}
-                onError={setUploadError}
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="raw-text" className="text-sm font-medium text-text-secondary">
-                회의 내용
-                {uploadedFileName && (
-                  <div className="mt-0.5 text-xs font-normal text-primary">
-                    {uploadedFileName}에서 불러옴
-                  </div>
-                )}
-              </label>
-              <textarea
-                id="raw-text"
-                className="min-h-48 w-full resize-y rounded-lg border border-glass-border bg-glass-bg px-3 py-2 text-sm text-text-primary backdrop-blur-sm placeholder:text-text-muted outline-none transition-colors focus:border-border-focus focus:ring-2 focus:ring-primary/20"
-                placeholder="회의 내용을 붙여넣거나 위에서 파일을 업로드하세요..."
-                value={rawText}
-                onChange={(e) => setRawText(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" size="lg" className="self-start" loading={loading}>
-              {loading ? '생성 중...' : '회의록 생성'}
-            </Button>
-          </form>
-        )}
-      </Card>
+      <MeetingInputCollapsible
+        title={title}
+        date={date}
+        attendees={attendees}
+        rawText={rawText}
+        uploadedFileName={uploadedFileName}
+        loading={loading}
+        hasResult={result !== null}
+        expanded={formExpanded}
+        onToggle={() => setFormExpanded((expanded) => !expanded)}
+        onTitleChange={setTitle}
+        onDateChange={setDate}
+        onAttendeesChange={setAttendees}
+        onRawTextChange={setRawText}
+        onFileExtracted={(text, fileName) => {
+          setRawText(text);
+          setUploadedFileName(fileName);
+          setUploadError('');
+        }}
+        onFileError={setUploadError}
+        onSubmit={handleSubmit}
+      />
 
       <ActionItemModal
         open={actionModal.open}
