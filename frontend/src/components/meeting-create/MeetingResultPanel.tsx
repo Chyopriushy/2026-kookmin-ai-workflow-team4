@@ -1,16 +1,19 @@
 import type { ReactNode } from 'react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
+import ActionSuggestionRow from '@/components/meeting-create/ActionSuggestionRow';
 import MeetingActionItemCard from '@/components/meeting-create/MeetingActionItemCard';
 import type { ActionItem, Meeting } from '@/api/types';
 import { isoToDateKey } from '@/utils/actionApiMapper';
+import { getPendingActionSuggestions } from '@/utils/actionSuggestions';
 
 interface MeetingResultPanelProps {
   meeting: Meeting;
   actionItems: ActionItem[];
   addedActionIds?: Set<string>;
   generating?: boolean;
-  onGenerateOne: () => void;
+  creatingSuggestion?: string | null;
+  onCreateOne: (content: string) => void;
   onGenerateAll: () => void;
   onAddAction: (action: ActionItem) => void;
 }
@@ -36,18 +39,26 @@ export default function MeetingResultPanel({
   actionItems,
   addedActionIds,
   generating = false,
-  onGenerateOne,
+  creatingSuggestion = null,
+  onCreateOne,
   onGenerateAll,
   onAddAction,
 }: MeetingResultPanelProps) {
   const { minutes } = meeting;
+  const pendingSuggestions = getPendingActionSuggestions(
+    meeting,
+    actionItems.map((item) => item.content),
+  );
+  const createdCount = actionItems.length;
+  const pendingCount = pendingSuggestions.length;
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <div className="text-2xl font-bold text-text-primary">생성된 회의록</div>
         <div className="text-sm text-text-secondary">
-          AI가 구조화한 회의 요약입니다. 액션 아이템은 아래 버튼으로 필요할 때 추출할 수 있습니다.
+          AI가 구조화한 회의 요약입니다. 아래 후보를 클릭해 액션을 하나씩 만들거나, 전체 생성으로
+          한 번에 추출할 수 있습니다.
         </div>
       </div>
 
@@ -97,21 +108,19 @@ export default function MeetingResultPanel({
         </ResultSection>
       )}
 
-      <ResultSection
-        title={actionItems.length > 0 ? `액션 아이템 (${actionItems.length})` : '액션 아이템'}
-        description="회의록에서 할 일을 추출한 뒤, 담당자·일정을 확인하고 트래커에 추가할 수 있습니다."
-      >
+      <Card>
         <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              loading={generating}
-              onClick={onGenerateOne}
-            >
-              액션 1개 생성
-            </Button>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex flex-col gap-1">
+              <div className="text-lg font-semibold text-text-primary">
+                {createdCount > 0 || pendingCount > 0
+                  ? `액션 아이템${createdCount > 0 ? ` (${createdCount})` : ''}`
+                  : '액션 아이템'}
+              </div>
+              <div className="text-sm text-text-secondary">
+                회의록에서 추출한 할 일 후보입니다. 항목을 클릭하면 1건씩 생성됩니다.
+              </div>
+            </div>
             <Button
               type="button"
               size="sm"
@@ -123,12 +132,27 @@ export default function MeetingResultPanel({
             </Button>
           </div>
 
-          {actionItems.length === 0 ? (
-            <div className="text-sm text-text-muted">
-              아직 추출된 액션 아이템이 없습니다. 위 버튼으로 생성해 주세요.
+          {pendingCount > 0 && (
+            <div className="flex flex-col gap-2">
+              <div className="text-xs font-medium text-text-muted">
+                추출 후보 {pendingCount}건 · 클릭하여 생성
+              </div>
+              {pendingSuggestions.map((content) => (
+                <ActionSuggestionRow
+                  key={content}
+                  content={content}
+                  loading={creatingSuggestion === content}
+                  onCreate={() => onCreateOne(content)}
+                />
+              ))}
             </div>
-          ) : (
+          )}
+
+          {createdCount > 0 ? (
             <div className="flex flex-col gap-3">
+              <div className="text-xs font-medium text-text-muted">
+                생성된 액션 · 담당자·일정 확인 후 트래커에 추가
+              </div>
               {actionItems.map((action) => (
                 <MeetingActionItemCard
                   key={action.id}
@@ -139,9 +163,13 @@ export default function MeetingResultPanel({
                 />
               ))}
             </div>
-          )}
+          ) : pendingCount === 0 ? (
+            <div className="text-sm text-text-muted">
+              추출할 후보가 없습니다. 「액션 전체 생성」으로 AI가 할 일을 추출해 보세요.
+            </div>
+          ) : null}
         </div>
-      </ResultSection>
+      </Card>
     </div>
   );
 }
