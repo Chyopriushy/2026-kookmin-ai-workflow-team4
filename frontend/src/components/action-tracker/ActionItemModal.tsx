@@ -1,11 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import {
-  ACTION_STATUS_COLUMNS,
-  type ActionBoardItem,
-  type ActionBoardStatus,
-} from '@/constants/actionTracker';
+import Select from '@/components/ui/Select';
+import { ACTION_STATUS_COLUMNS, type ActionBoardItem } from '@/constants/actionTracker';
 import type { ActionItemDraft } from '@/stores/actionTrackerStore';
 
 interface ActionItemModalProps {
@@ -107,7 +104,7 @@ export default function ActionItemModal({
             </label>
             <input
               id="action-content"
-              className="w-full rounded-lg border border-glass-border bg-glass-bg px-3 py-2 text-sm text-text-primary outline-none focus:border-border-focus focus:ring-2 focus:ring-primary/20"
+              className="field-control"
               value={draft.content}
               onChange={(e) => setDraft((prev) => ({ ...prev, content: e.target.value }))}
               placeholder="예: API 명세 문서 작성"
@@ -136,52 +133,59 @@ export default function ActionItemModal({
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input
-              label="시작일"
-              type="date"
-              value={draft.startDate ?? ''}
-              onChange={(e) =>
-                setDraft((prev) => ({
-                  ...prev,
-                  startDate: e.target.value || null,
-                }))
-              }
-            />
-            <Input
-              label="마감일"
-              type="date"
-              value={draft.dueDate ?? ''}
-              onChange={(e) =>
-                setDraft((prev) => ({
-                  ...prev,
-                  dueDate: e.target.value || null,
-                }))
-              }
-            />
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="action-start-date" className="text-sm font-medium text-text-secondary">
+                시작일
+              </label>
+              <input
+                id="action-start-date"
+                type="date"
+                className="field-control"
+                value={draft.startDate ?? ''}
+                onChange={(e) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    startDate: e.target.value || null,
+                  }))
+                }
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="action-due-date" className="text-sm font-medium text-text-secondary">
+                마감일
+              </label>
+              <input
+                id="action-due-date"
+                type="date"
+                className="field-control"
+                value={draft.dueDate ?? ''}
+                onChange={(e) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    dueDate: e.target.value || null,
+                  }))
+                }
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="action-status" className="text-sm font-medium text-text-secondary">
-              상태
-            </label>
-            <select
-              id="action-status"
-              className="w-full rounded-lg border border-glass-border bg-glass-bg px-3 py-2 text-sm text-text-primary outline-none focus:border-border-focus focus:ring-2 focus:ring-primary/20"
-              value={draft.status}
-              onChange={(e) =>
-                setDraft((prev) => ({
-                  ...prev,
-                  status: e.target.value as ActionBoardStatus,
-                }))
-              }
-            >
-              {ACTION_STATUS_COLUMNS.map((column) => (
-                <option key={column.id} value={column.id}>
-                  {column.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="상태"
+            id="action-status"
+            value={draft.status}
+            onChange={(e) =>
+              setDraft((prev) => ({
+                ...prev,
+                status: e.target.value as ActionItemDraft['status'],
+              }))
+            }
+          >
+            {ACTION_STATUS_COLUMNS.map((column) => (
+              <option key={column.id} value={column.id}>
+                {column.label}
+              </option>
+            ))}
+          </Select>
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="action-memo" className="text-sm font-medium text-text-secondary">
@@ -189,7 +193,7 @@ export default function ActionItemModal({
             </label>
             <textarea
               id="action-memo"
-              className="min-h-24 w-full resize-y rounded-lg border border-glass-border bg-glass-bg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-border-focus focus:ring-2 focus:ring-primary/20"
+              className="field-control min-h-24 resize-y"
               value={draft.memo}
               onChange={(e) => setDraft((prev) => ({ ...prev, memo: e.target.value }))}
               placeholder="진행 상황, 참고 사항 등을 기록하세요"

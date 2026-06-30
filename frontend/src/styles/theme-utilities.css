@@ -320,6 +320,41 @@
     border-radius: 1.25rem;
   }
 
+  /* Form field controls */
+  .field-control {
+    @apply w-full rounded-xl border border-glass-border bg-glass-bg px-3 py-2.5 text-sm text-text-primary backdrop-blur-sm outline-none transition-all duration-200;
+  }
+
+  .field-control::placeholder {
+    @apply text-text-muted;
+  }
+
+  .field-control:focus {
+    @apply border-border-focus ring-2 ring-primary/15;
+  }
+
+  .field-select {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+  }
+
+  .field-select:focus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  }
+
+  input[type='date'].field-control {
+    color-scheme: light;
+  }
+
+  .dark input[type='date'].field-control {
+    color-scheme: dark;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .page-enter-fade-up,
     .page-enter-slide-right,
