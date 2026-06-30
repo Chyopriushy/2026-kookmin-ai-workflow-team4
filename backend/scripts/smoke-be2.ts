@@ -195,7 +195,41 @@ async function main() {
     const delMiss = await fetch(`${base}/api/actions/nonexistent-id`, { method: "DELETE" });
     assert.equal(delMiss.status, 404, "없는 액션 DELETE는 404");
 
-    console.log("✅ BE-2 smoke test passed (actions CRUD + 4-status + search, mock mode)");
+    // 17) POST /api/actions/generate mode=one → 201, 새 액션 1건만 저장(기존 content 제외)
+    const genOne = await fetch(`${base}/api/actions/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ meetingId, mode: "one" }),
+    });
+    assert.equal(genOne.status, 201, "generate(one)는 201");
+    assert.equal(genOne.headers.get("x-llm-mode"), "mock", "X-LLM-Mode 헤더(mock)");
+    const one = (await genOne.json()) as Record<string, any>;
+    assert.equal(one.generated, 1, "mode=one은 1건만 생성");
+    assert.equal(one.actions.length, 1, "actions 1건");
+    assert.ok(one.actions[0].id && one.actions[0].meetingId === meetingId, "bare ActionItem + meetingId");
+    assert.equal(one.actions[0].status, "todo", "신규 액션 status=todo");
+
+    // 18) 재호출(all) → 추출 결과가 모두 기존 content면 200 + generated=0(중복 제외)
+    const genAgain = await fetch(`${base}/api/actions/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ meetingId, mode: "all" }),
+    });
+    assert.equal(genAgain.status, 200, "추출할 새 항목 없으면 200");
+    const genAgain2 = (await genAgain.json()) as Record<string, any>;
+    assert.equal(genAgain2.generated, 0, "중복 content는 미생성");
+    assert.equal(genAgain2.actions.length, 0, "빈 배열");
+
+    // 19) 없는 meetingId → 404
+    const genMiss = await fetch(`${base}/api/actions/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ meetingId: "no-such-meeting", mode: "all" }),
+    });
+    assert.equal(genMiss.status, 404, "없는 meetingId는 404");
+    assert.equal(((await genMiss.json()) as any).error.code, "NOT_FOUND");
+
+    console.log("✅ BE-2 smoke test passed (actions CRUD + generate + 4-status + search, mock mode)");
   } finally {
     // 테스트로 생성된 회의 정리(액션아이템은 Cascade로 함께 삭제).
     if (meetingId) {

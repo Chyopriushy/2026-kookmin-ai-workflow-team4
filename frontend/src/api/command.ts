@@ -1,5 +1,8 @@
 import api from '@/api/axios';
 import type {
+  ActionItem,
+  ActionItemWithMeeting,
+  CreateActionItemRequest,
   CreateMeetingRequest,
   GenerateActionsRequest,
   GenerateActionsResponse,
@@ -8,7 +11,6 @@ import type {
   PaginatedMeetingsResponse,
   SearchMeetingsResponse,
   UpdateActionItemRequest,
-  ActionItem,
 } from '@/api/types';
 
 export async function getMeetings(params?: {
@@ -47,6 +49,11 @@ export async function updateActionItem(
 
 export async function deleteActionItem(id: string): Promise<void> {
   await api.delete(`/api/actions/${id}`);
+}
+
+export async function createActionItem(body: CreateActionItemRequest): Promise<ActionItem> {
+  const { data } = await api.post<ActionItemWithMeeting>('/api/actions', body);
+  return data;
 }
 
 export async function generateActions(
